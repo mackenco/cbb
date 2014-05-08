@@ -26,3 +26,26 @@ get '/episodes' do
 
   json episodes
 end
+
+get '/guests' do 
+  url = 'http://www.earwolf.com/alleps-ajax.php?show=9'
+  doc = Nokogiri::HTML(open(url))
+  guests = {}
+
+  doc.css("li").each do |ep|
+    title = ep.css("a").text
+
+    ep.css("span").each do |g|
+      guest = g.text
+      if guests[guest] 
+        guests[guest][:count] += 1
+        guests[guest][:list] << title
+      else
+        guests[guest] = {count: 1, list: [title]}
+      end
+    end
+
+  end
+
+  json guests
+end
