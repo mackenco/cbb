@@ -2,18 +2,7 @@
 var w = 600;
 var h = 250;
 
-var dataset = [ 5, 10, 13, 19, 21, 25, 22, 18, 15, 13,
-        11, 12, 15, 20, 18, 17, 16, 18, 23, 25 ];
-
 var sortOrder = false;
-
-var xScale = d3.scale.ordinal()
-        .domain(d3.range(dataset.length))
-        .rangeRoundBands([0, w], 0.05);
-
-var yScale = d3.scale.linear()
-        .domain([0, d3.max(dataset)])
-        .range([0, h]);
 
 //Create SVG element
 var svg = d3.select("body")
@@ -21,8 +10,27 @@ var svg = d3.select("body")
       .attr("width", w)
       .attr("height", h);
 
+//Get the data
+d3.json("/guests", function(json) {
+  var arr = [];
+  for (var key in json) { arr.push(json[key]); }
+  return drawStuff(arr);
+});
+
 //Create bars
-svg.selectAll("rect")
+var drawStuff = function(data) {
+  console.log(data);
+  var dataset = data;
+
+  var xScale = d3.scale.ordinal()
+                 .domain(d3.range(dataset.length))
+                 .rangeRoundBands([0, w], 0.05);
+
+  var yScale = d3.scale.linear()
+                 .domain([0, d3.max(dataset, function(d) { return d.count; })])
+                 .range([0, h]);
+
+  svg.selectAll("rect")
    .data(dataset)
    .enter()
    .append("rect")
@@ -30,14 +38,14 @@ svg.selectAll("rect")
       return xScale(i);
    })
    .attr("y", function(d) {
-      return h - yScale(d);
+      return h - yScale(d.count);
    })
    .attr("width", xScale.rangeBand())
    .attr("height", function(d) {
-      return yScale(d);
+      return yScale(d.count);
    })
    .attr("fill", function(d) {
-    return "rgb(0, 0, " + (d * 10) + ")";
+    return "rgb(0, 0, " + (d.count * 10) + ")";
    })
    .on("click", function() {
       sortBars();
@@ -49,32 +57,13 @@ svg.selectAll("rect")
       .style("left", xPosition + "px")
       .style("top", yPosition + "px")
       .select("#value")
-      .text(d)
+      .text(d.name)
 
     d3.select("#tooltip").classed("hidden", false);
     })
    .on("mouseout", function() {
       d3.select("#tooltip").classed("hidden", true);
-   });
-
-//Create labels
-// svg.selectAll("text")
-//    .data(dataset)
-//    .enter()
-//    .append("text")
-//    .text(function(d) {
-//       return d;
-//    })
-//    .attr("text-anchor", "middle")
-//    .attr("x", function(d, i) {
-//       return xScale(i) + xScale.rangeBand() / 2;
-//    })
-//    .attr("y", function(d) {
-//       return h - yScale(d) + 14;
-//    })
-//    .attr("font-family", "sans-serif")
-//    .attr("font-size", "11px")
-//    .attr("fill", "white");
+ });
 
 var sortBars = function() {
   sortOrder = !sortOrder;
@@ -92,48 +81,5 @@ var sortBars = function() {
      .attr("x", function(d, i) {
         return xScale(i);
      });
-};
-
-// var h = 500;
-// var w = 4000;
-// var barPadding = 1;
-
-// var svg = d3.select("body")
-//             .append("svg")
-//             .attr("width", w)
-//             .attr("height", h);
-
-// d3.json("/guests", function(json) {
-//   var arr = [];
-//   for (var key in json) { arr.push(json[key]); }
-//   return drawStuff(arr);
-// });
-
-// var drawStuff = function(data) {
-//   var dataset = data;
-//   svg.selectAll("rect")
-//    .data(dataset)
-//    .enter()
-//    .append("rect")
-//    .attr({
-//       x: function(d, i) { return i * (w / dataset.length); },
-//       y: function(d) { return h - d.count*4; },
-//       width: w / dataset.length - barPadding,
-//       height: function(d) { return d.count * 4; },
-//       fill: function(d) { return "rgb(0, 0, " + (d.count * 10) + ")";}
-//     });
-
-// svg.selectAll("text")
-//    .data(dataset)
-//    .enter()
-//    .append("text")
-//    .text(function(d) { return d.count; })
-//    .attr({
-//       x: function(d, i) { return i * (w / dataset.length) + (w / dataset.length - barPadding) / 2; },
-//       y: function(d) { return h - (d.count * 4) + 14; },
-//       "font-family": "sans-serif",
-//       "font-size": "11px",
-//       fill: "white",
-//       "text-anchor": "middle"
-//    });
-// };
+  };
+}
