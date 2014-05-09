@@ -37,11 +37,11 @@ get '/guests' do
 
     ep.css("span").each do |g|
       guest = g.text
-      if guests[guest] 
+      if guests[guest]
         guests[guest][:count] += 1
         guests[guest][:list] << title
       else
-        guests[guest] = {count: 1, list: [title]}
+        guests[guest] = {name: guest, count: 1, list: [title]}
       end
     end
 
